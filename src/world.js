@@ -36,8 +36,7 @@ function main() {
         controls.update();
 	}
 
-	// LIGHTS
-	// 3 light sources
+	// LIGHTS: Ambient, Directional, Hemisphere
 
 	{
 
@@ -53,8 +52,8 @@ function main() {
 		const color = 0xFFFFFF;
 		const intensity = 1;
 		const light = new THREE.DirectionalLight( color, intensity );
-		light.position.set( - 1, 2, 4 );
-		scene.add( light );
+		light.position.set(- 1, 2, 4);
+		scene.add(light);
 
 	}
 
@@ -68,7 +67,23 @@ function main() {
 		
 	}
 
-	function makeCone( color, x, height, radius ) {
+	// SKYBOX
+	// Source: https://threejs.org/manual/?q=sky#en/backgrounds,
+	//			https://jaxry.github.io/panorama-to-cubemap/
+	{
+		const loader = new THREE.CubeTextureLoader();
+        const texture = loader.load([
+			'./background/px.jpg',
+			'./background/nx.jpg',
+			'./background/py.jpg',
+			'./background/ny.jpg',
+			'./background/pz.jpg',
+			'./background/nz.jpg',
+        ]);
+        scene.background = texture;
+	}
+
+	function makeCone( color, x, y, height, radius ) {
 
         // Source: ChatGPT, https://threejs.org/manual/#en/primitives
 
@@ -76,13 +91,43 @@ function main() {
         const coneGeometry = new THREE.ConeGeometry(radius, height, 32);
 		const cone = new THREE.Mesh( coneGeometry, material );
 		cone.position.x = x;
+		cone.position.y = y;
         scene.add( cone );
 
 		return cone;
         
 	}
 
-    function makeTorus( color, x, radius, tubeRadius ) {
+	function makeCube( color, x, y, width, height, depth ) {
+
+		// Source: https://threejs.org/manual/#en/primitives
+
+		const material = new THREE.MeshPhongMaterial( { color } );
+		const boxGeometry = new THREE.BoxGeometry(width, height, depth);
+		const cube = new THREE.Mesh( boxGeometry, material );
+		cube.position.x = x;
+		cube.position.y = y;
+		scene.add( cube );
+
+		return cube;
+
+	}
+
+	function makeSphere( color, x, y, radius, width, height ) {
+
+		// Source: ChatGPT, https://threejs.org/manual/#en/primitives
+
+		const material = new THREE.MeshPhongMaterial( { color } );
+		const sphereGeometry = new THREE.SphereGeometry(radius, width, height);
+		const sphere = new THREE.Mesh( sphereGeometry, material );
+		sphere.position.x = x;
+		sphere.position.y = y;
+		scene.add(sphere);
+
+		return sphere;
+	}
+
+    function makeTorus( color, x, y, radius, tubeRadius ) {
 
         // Source: ChatGPT, https://threejs.org/manual/#en/primitives
 
@@ -90,6 +135,7 @@ function main() {
         const torusGeometry = new THREE.TorusGeometry(radius, tubeRadius, 32, 32);
 		const torus = new THREE.Mesh( torusGeometry, material );
 		torus.position.x = x;
+		torus.position.y = y;
         scene.add( torus );
 
 		return torus;
@@ -97,8 +143,33 @@ function main() {
 	}
     
 	const shapes = [
-		makeCone( 0x8844aa, -2, 1, 1 ),
-		makeTorus( 0xaa8844, 2, 0.5, 0.25 ),
+
+		// Top row
+		makeCone( 0x8844aa, -4, 2, 1, 1 ),
+		makeSphere ( 0x96ab35, -2, 2, 0.75, 22, 22 ),
+		makeCube ( 0xaa8849, 0, 2, 1, 1, 1),
+		makeSphere ( 0x96ab35, 2, 2, 0.75, 22, 22 ),
+		makeCone( 0x8844aa, 4, 2, 1, 1 ),
+
+		// Middle row 1
+		makeCube( 0xaa8849, -4, 0, 1, 1, 1 ), 
+		makeCone( 0x8844aa, -2, 0, 1, 1 ),
+		makeTorus( 0xaa8844, 2, 0, 0.5, 0.25 ),
+		makeCube ( 0xab7644, 4, 0, 1, 1, 1 ),
+
+		// Middle row 2
+		makeTorus( 0xac94503, -4, -2, 0.5, 0.25 ),
+		makeCube ( 0xaa8849, -2, -2, 1, 1, 1 ),
+		makeSphere ( 0x96ab35, 0, -2, 0.75, 22, 22 ),
+		makeCone( 0x8844aa, 2, -2, 1, 1 ),
+		makeTorus( 0xac94503, 4, -2, 0.5, 0.25 ),
+
+		// Bottom row
+		makeCube ( 0xaa8849, -4, -4, 1, 1, 1 ),
+		makeTorus( 0xac9900, -2, -4, 0.5, 0.25 ),
+		makeTorus( 0xac9900, 0, -4, 0.5, 0.25 ),
+		makeCube ( 0xab7644, 2, -4, 1, 1, 1 ),
+		makeSphere( 0xab7644, 4, -4, 0.75, 22, 22 )
 	];
 
     const loader = new THREE.TextureLoader();
